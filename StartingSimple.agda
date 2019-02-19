@@ -88,12 +88,12 @@ addBin2 (b1 n) (b0 m) = b1 (addBin2 n m)
 addBin2 (b0 n) (b1 m) = b1 (addBin2 n m)
 addBin2 (b1 n) (b1 m) = b0 (inc (addBin2 n m))
 
--- Check if an string is equal to another
-eqString : ∀ (str : Bin) -> (oth : Bin) -> Bool
-eqString be       be       = true
-eqString (b0 str) (b0 oth) = eqString str oth
-eqString (b1 str) (b1 oth) = eqString str oth
-eqString a        b        = false
+-- Check if a binary is equal to another
+eq : ∀ (str : Bin) -> (oth : Bin) -> Bool
+eq be       be       = true
+eq (b0 str) (b0 oth) = eq str oth
+eq (b1 str) (b1 oth) = eq str oth
+eq a        b        = false
 
 -- Check if a binary starts with a pattern
 startsWith : ∀ (pat : Bin) -> ∀ (str : Bin) -> Bool
@@ -119,7 +119,7 @@ notTest : Bool
 notTest = not (false)
 
 isEqualTest : Bool
-isEqualTest = (eqString (b1(b0(b1(b1 be)))) (b1(b0(b1 be))))
+isEqualTest = (eq (b1(b0(b1(b1 be)))) (b1(b0(b1 be))))
 
 startsWithTest : Bool
 startsWithTest = (startsWith (b1(b0(b1 be))) (b1(b0(b1(b1(b0(b0 be)))))))
