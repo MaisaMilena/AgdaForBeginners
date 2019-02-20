@@ -62,52 +62,71 @@ and-theorem-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : a ≡ true) -> Dec 
 and-theorem-0 .true true  refl = yes refl
 and-theorem-0 .true false refl = nop (λ ())
 
--- and-ok-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : a ≡ false) -> and a b ≡ false
+and-ok-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : a ≡ false) -> and a b ≡ false
+and-ok-0 .false m refl = refl
 
--- and-ok-1 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : a ≡ false) -> and a b ≡ b
+and-ok-1 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : a ≡ true) -> and a b ≡ b
+and-ok-1 .true true  refl = refl
+and-ok-1 .true false refl = refl
 
--- Prove esses teoremas
--- or-theorem-0 : ∀ (a : Bool) -> or a (not a) ≡ true
--- and-theorem-0 : ∀ (a : Bool) -> and a (not a) ≡ false
+or-theorem-0 : ∀ (a : Bool) -> or a (not a) ≡ true
+or-theorem-0 true  = refl
+or-theorem-0 false = refl
+
+and-theorem-1 : ∀ (a : Bool) -> and a (not a) ≡ false
+and-theorem-1 true  = refl
+and-theorem-1 false = refl
+
+commutation : ∀ (a : Bool) -> ∀ (b : Bool) -> and a b ≡ and b a
+commutation true true = refl
+commutation true false = refl
+commutation false true = refl
+commutation false false = refl
 
 -- demorgan
--- demorgan-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> not (and a b) ≡ or (not a) (not b)
--- demorgan-1 : ∀ (a : Bool) -> ∀ (b : Bool) -> not (or a b) ≡ and (not a) (not b)
+demorgan-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> not (and a b) ≡ or (not a) (not b)
+demorgan-0 true  true  = refl
+demorgan-0 true  false = refl
+demorgan-0 false true  = refl
+demorgan-0 false false = refl
 
--- Essa funcao so pode ser chamada se o input for true
-cool : ∀ (a : Bool) -> ∀ (e : a ≡ true) -> Nat
-cool a e = 42
+demorgan-1 : ∀ (a : Bool) -> ∀ (b : Bool) -> not (or a b) ≡ and (not a) (not b)
+demorgan-1 true  true  = refl
+demorgan-1 true  false = refl
+demorgan-1 false true  = refl
+demorgan-1 false false = refl
 
+not-not : ∀ (a : Bool) → a ≡ not (not a)
+not-not true  = refl
+not-not false = refl
 
--- Voce consegue chama-la no caso abaixo?
--- my-program-0 : ∀ (a : Bool) -> Nat
--- my-program-0 a = cool (or a (not a)) {!   !}
+cake : ∀ (a : Bool) -> ∀ (e : a ≡ true) -> Nat
+cake a e = 42
 
--- E no caso abaixo? (me avise quando chegar aqui, precisa de algo que nao ensinei ainda)
--- my-program-1 : ∀ (a : Bool) -> Nat
--- my-program-1 a = cool (or (not (not a)) (not a)) {!   !}
+my-program-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : b ≡ or a (not a)) -> Nat
+my-program-0 a b e =
+  let before   = e                              -- b ≡ or a (not a)
+      template = λ x -> b ≡ x                   -- (onde vai substituir no before)
+      eq-proof = or-theorem-0 a                 -- or a (not a) ≡ true (lado esquerdo = antes, direito = depois)
+      after    = subst template eq-proof before -- b ≡ true
+  in cake b after
 
+my-program-1 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : b ≡ not (not a)) -> b ≡ a
+my-program-1 a b e =
+  let template = λ x -> b ≡ x
+      eq-proof = sym (not-not a)
+      result   = (subst template eq-proof e)
+  in result
 
+-- Subtraction of natural number
 -- sub : Nat -> Nat -> Nat
+-- sub a zero            = zero
+-- sub (succ a) (succ b) = succ (sub a b)
+
 -- sub-ok : ∀ (n : Nat) -> ∀ (m : Nat) -> (m > n) -> add n (sub m n) ≡ m
 
 
 -- TESTS --
--- And --
-andTrueTest : Bool
-andTrueTest = (and true true)
-
-andFalseTest : Bool
-andFalseTest = (and true false)
-
-andFalseTest2 : Bool
-andFalseTest2 = (and false false)
--- Id --
-idTrueTest : Bool
-idTrueTest = (id true)
-
-idFalseTest : Bool
-idFalseTest = (id false)
 
 id-ok-test : id false ≡ false
 id-ok-test = id-ok false
@@ -121,8 +140,30 @@ dec-test-2 = yes refl
 dec-test-3 : Dec (true ≡ false)
 dec-test-3 = nop λ ()
 
-foo : Not (true ≡ false)
-foo ()
-
 and-theorem-test : Dec (and true false ≡ true)
 and-theorem-test = (and-theorem-0 true false refl)
+
+-- my-program-0-false-test : Nat
+-- my-program-0-false-test = (my-program-0 false)
+--
+-- my-program-0-true-test : Nat
+-- my-program-0-true-test = (my-program-0 true)
+
+--
+-- temos:
+--   before   : Array (2 + 2) Bool
+--   eq-proof : 2 + 2 ≡ 4
+-- queremos:
+--   after    : Array 4 Bool
+--
+-- let template = (λ x -> Array x Bool)
+--     after    = subst template eq-proof before
+--
+-- temos:
+--   before   : b ≡ or a (not a)
+--   eq-proof : or a (not a) ≡ true
+-- queremos:
+--   after    : b ≡ true
+--
+-- let template = (λ x -> b ≡ x)
+--     after    = subst template eq-proof before
