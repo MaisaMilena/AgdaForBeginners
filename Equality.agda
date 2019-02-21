@@ -1,11 +1,12 @@
 module Equality where
 
 open import Relation.Binary.PropositionalEquality
--- open import Data.Nat using (_>?_) renaming (ℕ to Nat)
--- open import Agda.Builtin.Nat (_>_)
 
 -- A set that does not contain anything
 data Empty : Set where
+
+empty-elim : (P : Set) -> Empty -> P
+empty-elim P ()
 
 -- A set with only one element
 data Unit : Set where
@@ -28,6 +29,7 @@ data Bin : Set where
 Not : (P : Set) -> Set
 Not P = P -> Empty
 
+-- Different from Bool, shows an evidence of why the value is "yes" or "nop"
 data Dec (P : Set) : Set where
   yes : P     -> Dec P
   nop : Not P -> Dec P
@@ -40,12 +42,27 @@ data _≤_ : Nat -> Nat -> Set where
   s≤s : ∀ {m n} (m≤n : m ≤ n) → succ m ≤ succ n
 
 data Even : Nat -> Set where
-  even-zero : Even zero
+  even-zero : Even 0
   even-succ : ∀ (n : Nat) -> Even n -> Even (succ (succ n))
 
--- even-zero : Even zero
--- even-succ : ∀ (n : Nat) -> Even n -> Even (succ (succ n))
+data Odd : Nat -> Set where
+  odd-one : Odd 1
+  odd-succ : ∀ (n : Nat) -> Odd n -> Odd (succ (succ n))
+
+-- dec-test-2 : Dec (true ≡ true)
+-- dec-test-2 = yes refl
 --
+-- dec-test-3 : Dec (true ≡ false)
+-- dec-test-3 = nop λ ()
+
+-- ... = construtor + resultado da aplicação
+-- even-test : Even 2
+-- even-test = even-succ 2 Even 2 Even (succ(succ 2))
+
+-- Vic escreveu assim:
+-- even-succ   : ∀ (n : Nat) -> Even n -> Even (succ (succ n))
+-- even-succ 2 : Even 2 -> Even (succ (succ 2))
+
 -- even-succ 0 : Even 0 -> Even 2
 -- even-succ 1 : Even 1 -> Even 3
 -- even-succ 2 : Even 2 -> Even 4
@@ -53,16 +70,9 @@ data Even : Nat -> Set where
 -- even-succ 4 : Even 4 -> Even 6
 -- even-succ 5 : Even 5 -> Even 7
 
-
---
---
---
--- foo : Nat -> Na
---
 -- even-zero : Even zero
 --
--- even-succ   : ∀ (n : Nat) -> Even n -> Even (succ (succ n))
--- even-succ 2 : Even 2 -> Even (succ (succ 2))
+
 
 _<_ : Nat → Nat → Bool
 _     < zero    = false
@@ -87,12 +97,6 @@ and : Bool -> Bool -> Bool
 and true  true   = true
 and m     n      = false
 
--- is-bigger-than : Nat -> Nat -> Bool
--- is-bigger-than a b with a >? b
--- ... | yes _ = true
--- ... | no _  = false
-
-
 -- Identity function for booleans. Receives a bool and return itself.
 id : Bool -> Bool
 id b = b
@@ -114,6 +118,11 @@ and-ok-0 .false m refl = refl
 and-ok-1 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : a ≡ true) -> and a b ≡ b
 and-ok-1 .true true  refl = refl
 and-ok-1 .true false refl = refl
+
+not-not : ∀ (a : Bool) → a ≡ not (not a)
+not-not true  = refl
+not-not false = refl
+
 
 or-theorem-0 : ∀ (a : Bool) -> or a (not a) ≡ true
 or-theorem-0 true  = refl
@@ -142,9 +151,7 @@ demorgan-1 true  false = refl
 demorgan-1 false true  = refl
 demorgan-1 false false = refl
 
-not-not : ∀ (a : Bool) → a ≡ not (not a)
-not-not true  = refl
-not-not false = refl
+
 
 cake : ∀ (a : Bool) -> ∀ (e : a ≡ true) -> Nat
 cake a e = 42
@@ -164,18 +171,66 @@ my-program-1 a b e =
       result   = (subst template eq-proof e)
   in result
 
+
+
 -- Subtraction of natural number
 sub : Nat -> Nat ->  Nat
 sub (succ a) (succ b) = (sub a b)
 sub a        zero     = a
-sub zero     (succ x) = zero -- second element beign bigger that the first will result a negative number
+sub zero     (succ x) = zero -- second element being bigger that the first will result a negative number
 
--- add-zero-n : ∀ (n : Nat) -> add 0 n ≡ n
+add-zero-n : ∀ (n : Nat) -> add 0 n ≡ n
+add-zero-n n = refl
+
+-- Não entendo porque ele não aceita refl
 -- add-n-zero : ∀ (n : Nat) -> add n 0 ≡ n
--- even-6 : Even 6
--- is-even : ∀ (n : Nat) -> Dec (Even n)
--- double-is-even : ∀ (n : Nat) -> Even (double n)
+-- add-n-zero n =
+
+even-6 : Even 6
+even-6 = even-succ 4 (even-succ 2 (even-succ 0 even-zero))
+
+even-14 : Even 14
+even-14 = even-succ 12 (even-succ 10 (even-succ 8 (even-succ 6 (even-succ 4 (even-succ 2 (even-succ zero even-zero))))))
+
+is-even-0 : ∀ (n : Nat) -> Bool
+is-even-0 zero           = true
+is-even-0 (succ zero)    = false
+is-even-0 (succ(succ a)) = is-even-0 a
+
+-- context n : Nat
+-- context x : Not (Even n)
+-- goal : Not (Even (succ (succ n)))
+aux-is-even-1 : ∀ (n : Nat) -> (x : Not (Even n)) -> Not (Even (succ (succ n)))
+aux-is-even-1 n x (even-succ .n p) = x p
+
+one-not-even : Not (Even 1)
+one-not-even = λ ()
+
+-- What is the evidence that makes a number even?
+-- Why it is "true" or why it is "false"?
+is-even-1 : ∀ (n : Nat) -> Dec (Even n)
+is-even-1 zero           = yes even-zero -- if it is a Dec (Even zero), what proofs that it is true?
+is-even-1 (succ zero)    = nop λ ()
+is-even-1 (succ(succ n)) with is-even-1 n  -- type:  Dec (Even (succ (succ n)))
+is-even-1 (succ (succ n)) | yes x = yes (even-succ n x) -- is even
+is-even-1 (succ (succ n)) | nop x = nop (aux-is-even-1 n x)
+
+
+
+
+
+
+-- Duplicates a number
+double : ∀ (n : Nat) -> Nat
+double zero     = zero
+double (succ n) = (succ (succ (double n)))
+
+double-is-even : ∀ (n : Nat) -> Even (double n)
+double-is-even zero     = even-zero
+double-is-even (succ n) = even-succ (double n) (double-is-even n)
+
 -- add-n-n-double : ∀ (n : Nat) -> add n n ≡ double n -- nao sei se eh mt dificil
+
 
 
 -- sub-ok : ∀ (n : Nat) -> ∀ (m : Nat) -> (mn) -> add n (sub m n) ≡ m
