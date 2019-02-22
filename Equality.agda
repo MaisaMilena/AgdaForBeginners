@@ -21,11 +21,6 @@ data Nat : Set where
   succ : Nat -> Nat
 {-# BUILTIN NATURAL Nat #-}
 
-data Bin : Set where
-  be : Bin
-  b0 : Bin -> Bin
-  b1 : Bin -> Bin
-
 Not : (P : Set) -> Set
 Not P = P -> Empty
 
@@ -48,30 +43,6 @@ data Even : Nat -> Set where
 data Odd : Nat -> Set where
   odd-one : Odd 1
   odd-succ : ∀ (n : Nat) -> Odd n -> Odd (succ (succ n))
-
--- dec-test-2 : Dec (true ≡ true)
--- dec-test-2 = yes refl
---
--- dec-test-3 : Dec (true ≡ false)
--- dec-test-3 = nop λ ()
-
--- ... = construtor + resultado da aplicação
--- even-test : Even 2
--- even-test = even-succ 2 Even 2 Even (succ(succ 2))
-
--- Vic escreveu assim:
--- even-succ   : ∀ (n : Nat) -> Even n -> Even (succ (succ n))
--- even-succ 2 : Even 2 -> Even (succ (succ 2))
-
--- even-succ 0 : Even 0 -> Even 2
--- even-succ 1 : Even 1 -> Even 3
--- even-succ 2 : Even 2 -> Even 4
--- even-succ 3 : Even 3 -> Even 5
--- even-succ 4 : Even 4 -> Even 6
--- even-succ 5 : Even 5 -> Even 7
-
--- even-zero : Even zero
---
 
 
 _<_ : Nat → Nat → Bool
@@ -209,15 +180,14 @@ one-not-even = λ ()
 -- What is the evidence that makes a number even?
 -- Why it is "true" or why it is "false"?
 is-even-1 : ∀ (n : Nat) -> Dec (Even n)
-is-even-1 zero           = yes even-zero -- if it is a Dec (Even zero), what proofs that it is true?
+is-even-1 zero           = yes even-zero
 is-even-1 (succ zero)    = nop λ ()
-is-even-1 (succ(succ n)) with is-even-1 n  -- type:  Dec (Even (succ (succ n)))
+-- This field asks for a type Dec (Even (succ (succ n))), but a Dec can
+-- return 2 values: yes or nop. "with" opens this case so we can deal
+-- with both types
+is-even-1 (succ(succ n)) with is-even-1 n
 is-even-1 (succ (succ n)) | yes x = yes (even-succ n x) -- is even
 is-even-1 (succ (succ n)) | nop x = nop (aux-is-even-1 n x)
-
-
-
-
 
 
 -- Duplicates a number
@@ -229,12 +199,20 @@ double-is-even : ∀ (n : Nat) -> Even (double n)
 double-is-even zero     = even-zero
 double-is-even (succ n) = even-succ (double n) (double-is-even n)
 
--- add-n-n-double : ∀ (n : Nat) -> add n n ≡ double n -- nao sei se eh mt dificil
 
+-- Goals:
+-- zero    : add zero zero ≡ double zero
+-- (succ n): add (succ n) (succ n) ≡ double (succ n)
+-- add-n-n-double : ∀ (n : Nat) -> add n n ≡ double n -- both of them returns a Nat
+-- add-n-n-double zero     = refl
+-- add-n-n-double (succ n) = {!   !}
 
 
 -- sub-ok : ∀ (n : Nat) -> ∀ (m : Nat) -> (mn) -> add n (sub m n) ≡ m
 -- sub-ok n m = ?
+
+-- proof that adding 2 odds is always an even
+
 
 -- TESTS --
 
