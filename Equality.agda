@@ -1,6 +1,7 @@
 module Equality where
 
-open import Relation.Binary.PropositionalEquality
+open import Relation.Binary.PropositionalEquality as P
+open import Relation.Binary.HeterogeneousEquality as H using (_≅_)
 
 -- A set that does not contain anything
 data Empty : Set where
@@ -43,7 +44,6 @@ data Even : Nat -> Set where
 data Odd : Nat -> Set where
   odd-one : Odd 1
   odd-succ : ∀ (n : Nat) -> Odd n -> Odd (succ (succ n))
-
 
 _<_ : Nat → Nat → Bool
 _     < zero    = false
@@ -103,11 +103,14 @@ and-theorem-1 : ∀ (a : Bool) -> and a (not a) ≡ false
 and-theorem-1 true  = refl
 and-theorem-1 false = refl
 
-commutation : ∀ (a : Bool) -> ∀ (b : Bool) -> and a b ≡ and b a
-commutation true true = refl
-commutation true false = refl
-commutation false true = refl
-commutation false false = refl
+comm-bool : ∀ (a : Bool) -> ∀ (b : Bool) -> and a b ≡ and b a
+comm-bool true true = refl
+comm-bool true false = refl
+comm-bool false true = refl
+comm-bool false false = refl
+
+-- exemplo do https://rosettacode.org/wiki/Proof
+-- comm-nat : (m n : Nat) -> m + n ≡ n + m
 
 -- demorgan
 demorgan-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> not (and a b) ≡ or (not a) (not b)
@@ -153,9 +156,16 @@ sub zero     (succ x) = zero -- second element being bigger that the first will 
 add-zero-n : ∀ (n : Nat) -> add 0 n ≡ n
 add-zero-n n = refl
 
--- Não entendo porque ele não aceita refl
--- add-n-zero : ∀ (n : Nat) -> add n 0 ≡ n
--- add-n-zero n =
+-- m+0≡m : (m : ℕ) → m + 0 ≡ m
+-- m+0≡m 0      = refl
+-- m+0≡m (1+ m) = cong (m+0≡m m)
+
+-- +-identity′ : ∀ (n : ℕ) → n + zero ≡ n
+-- +-identity′ zero = refl
+-- +-identity′ (suc n) rewrite +-identity′ n = refl
+add-n-zero : ∀ (n : Nat) -> add n 0 ≡ n
+add-n-zero zero     = refl
+add-n-zero (succ n) = cong succ (add-n-zero n)
 
 even-6 : Even 6
 even-6 = even-succ 4 (even-succ 2 (even-succ 0 even-zero))
@@ -178,14 +188,14 @@ one-not-even : Not (Even 1)
 one-not-even = λ ()
 
 -- What is the evidence that makes a number even?
--- Why it is "true" or why it is "false"?
+-- Returns a Dec: Why it is "true" or why it is "false"?
 is-even-1 : ∀ (n : Nat) -> Dec (Even n)
 is-even-1 zero           = yes even-zero
 is-even-1 (succ zero)    = nop λ ()
 -- This field asks for a type Dec (Even (succ (succ n))), but a Dec can
 -- return 2 values: yes or nop. "with" opens this case so we can deal
 -- with both types
-is-even-1 (succ(succ n)) with is-even-1 n
+is-even-1 (succ(succ n))  with is-even-1 n
 is-even-1 (succ (succ n)) | yes x = yes (even-succ n x) -- is even
 is-even-1 (succ (succ n)) | nop x = nop (aux-is-even-1 n x)
 
@@ -200,18 +210,45 @@ double-is-even zero     = even-zero
 double-is-even (succ n) = even-succ (double n) (double-is-even n)
 
 
--- Goals:
--- zero    : add zero zero ≡ double zero
+-- Goal --
 -- (succ n): add (succ n) (succ n) ≡ double (succ n)
--- add-n-n-double : ∀ (n : Nat) -> add n n ≡ double n -- both of them returns a Nat
--- add-n-n-double zero     = refl
--- add-n-n-double (succ n) = {!   !}
+
+seila : ∀ (m : Nat) -> succ (add m m) ≡ add m (succ m)
+seila zero    = refl
+seila (succ n) = {!   !}
+
+add-n-n-double : ∀ (n : Nat) -> add n n ≡ double n -- both of them returns a Nat
+add-n-n-double zero     = refl
+add-n-n-double (succ m) =
+  let ih  = add-n-n-double m
+      ih2 = cong succ ih
+      ih3 = cong succ ih2
+      eqp = seila m
+      -- TODO: fazer o template funcionar e fazer a seila
+      -- template = λ x -> x ≡ succ (succ (double m))
+      -- mostBe = succ (add m (succ m))
+      -- result = (subst template mostBe eqp)
+  in {!   !}
+
+-- let template = λ x -> b ≡ x
+--     eq-proof = sym (not-not a)
+--     result   = (subst template eq-proof e)
+
+--       add m m         ≡             double m   -- hipotese indutiva (temos de graca)
+-- succ (add m m)        ≡ succ       (double m)  -- aplicando (cong succ)
+-- succ (succ (add m m)) ≡ succ (succ (double m)) -- aplicando (cong succ)
+-- succ (add m (succ m)) ≡ succ (succ (double m)) -- objetivo
+
+
+
 
 
 -- sub-ok : ∀ (n : Nat) -> ∀ (m : Nat) -> (mn) -> add n (sub m n) ≡ m
 -- sub-ok n m = ?
 
 -- proof that adding 2 odds is always an even
+
+
 
 
 -- TESTS --
