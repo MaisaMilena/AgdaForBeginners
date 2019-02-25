@@ -133,7 +133,7 @@ cake a e = 42
 my-program-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : b ≡ or a (not a)) -> Nat
 my-program-0 a b e =
   let before   = e                                -- b ≡ or a (not a)
-      template = λ x -> b ≡ x                     -- (onde vai substituir no before)
+      template = λ x -> b ≡ x                     -- x represent where will be substituted on "before"
       eq-proof = or-theorem-0 a                   -- or a (not a) ≡ true (lado esquerdo = antes, direito = depois)
       after    = (subst template eq-proof before) -- b ≡ true
   in (cake b after)
@@ -210,35 +210,28 @@ double-is-even zero     = even-zero
 double-is-even (succ n) = even-succ (double n) (double-is-even n)
 
 
--- Goal --
--- (succ n): add (succ n) (succ n) ≡ double (succ n)
 
-seila : ∀ (m : Nat) -> succ (add m m) ≡ add m (succ m)
-seila zero    = refl
-seila (succ n) = {!   !}
+almost-assoc : ∀ (m : Nat) -> succ (add m m) ≡ add m (succ m)
+almost-assoc zero    = refl
+almost-assoc (succ n) = {!   !}
 
+-- ih2 : succ (add m m) ≡ succ (double m)
+-- eqp : succ (add m m) ≡ add m (succ m)
 add-n-n-double : ∀ (n : Nat) -> add n n ≡ double n -- both of them returns a Nat
 add-n-n-double zero     = refl
 add-n-n-double (succ m) =
-  let ih  = add-n-n-double m
-      ih2 = cong succ ih
-      ih3 = cong succ ih2
-      eqp = seila m
-      -- TODO: fazer o template funcionar e fazer a seila
-      -- template = λ x -> x ≡ succ (succ (double m))
-      -- mostBe = succ (add m (succ m))
-      -- result = (subst template mostBe eqp)
-  in {!   !}
-
--- let template = λ x -> b ≡ x
---     eq-proof = sym (not-not a)
---     result   = (subst template eq-proof e)
-
---       add m m         ≡             double m   -- hipotese indutiva (temos de graca)
--- succ (add m m)        ≡ succ       (double m)  -- aplicando (cong succ)
--- succ (succ (add m m)) ≡ succ (succ (double m)) -- aplicando (cong succ)
--- succ (add m (succ m)) ≡ succ (succ (double m)) -- objetivo
-
+  let ih  = add-n-n-double m -- working with something "concrete"
+      ih2 = cong succ ih -- cong apply something on both sides of the equality
+      eqp = almost-assoc m
+      template = λ x -> x ≡ succ (double m)
+      result = (subst template eqp ih2)
+      ih3 = cong succ result
+  in ih3
+-- Notes --
+--       add m m         ≡             double m   -- inductive hypotesis (we have it for free)
+-- succ (add m m)        ≡ succ       (double m)  -- applying (cong succ)
+-- succ (succ (add m m)) ≡ succ (succ (double m)) -- applying (cong succ)
+-- succ (add m (succ m)) ≡ succ (succ (double m)) -- objetive
 
 
 
