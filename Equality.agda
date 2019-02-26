@@ -1,7 +1,8 @@
 module Equality where
 
-open import Relation.Binary.PropositionalEquality as P
-open import Relation.Binary.HeterogeneousEquality as H using (_≅_)
+open import Relation.Binary.PropositionalEquality
+-- open import Data.Nat
+--   hiding (module ℕ)
 
 -- A set that does not contain anything
 data Empty : Set where
@@ -33,9 +34,9 @@ data Dec (P : Set) : Set where
 data Pair : Set where
   pair : Nat -> Nat -> Pair
 
-data _≤_ : Nat -> Nat -> Set where
-  z≤n : ∀ {n}                 → zero   ≤ n
-  s≤s : ∀ {m n} (m≤n : m ≤ n) → succ m ≤ succ n
+-- data _≤_ : Nat -> Nat -> Set where
+--   z≤n : ∀ {n}                 → zero   ≤ n
+--   s≤s : ∀ {m n} (m≤n : m ≤ n) → succ m ≤ succ n
 
 data Even : Nat -> Set where
   even-zero : Even 0
@@ -45,10 +46,10 @@ data Odd : Nat -> Set where
   odd-one : Odd 1
   odd-succ : ∀ (n : Nat) -> Odd n -> Odd (succ (succ n))
 
-_<_ : Nat → Nat → Bool
-_     < zero    = false
-zero  < succ _  = true
-succ n < succ m = n < m
+-- _<_ : Nat → Nat → Bool
+-- _     < zero    = false
+-- zero  < succ _  = true
+-- succ n < succ m = n < m
 
 -- Add two natural numbers
 add : ∀ (n : Nat) -> ∀ (m : Nat) -> Nat
@@ -130,7 +131,7 @@ demorgan-1 false false = refl
 cake : ∀ (a : Bool) -> ∀ (e : a ≡ true) -> Nat
 cake a e = 42
 
-my-program-0 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : b ≡ or a (not a)) -> Nat
+my-program-0 : ∀ a b -> ∀ (e : b ≡ or a (not a)) -> Nat
 my-program-0 a b e =
   let before   = e                                -- b ≡ or a (not a)
       template = λ x -> b ≡ x                     -- x represent where will be substituted on "before"
@@ -138,7 +139,7 @@ my-program-0 a b e =
       after    = (subst template eq-proof before) -- b ≡ true
   in (cake b after)
 
-my-program-1 : ∀ (a : Bool) -> ∀ (b : Bool) -> ∀ (e : b ≡ not (not a)) -> b ≡ a
+my-program-1 : ∀ (a b : Bool) -> ∀ (e : b ≡ not (not a)) -> b ≡ a
 my-program-1 a b e =
   let template = λ x -> b ≡ x
       eq-proof = sym (not-not a)
@@ -153,17 +154,10 @@ sub (succ a) (succ b) = (sub a b)
 sub a        zero     = a
 sub zero     (succ x) = zero -- second element being bigger that the first will result a negative number
 
-add-zero-n : ∀ (n : Nat) -> add 0 n ≡ n
+add-zero-n : ∀ n -> add 0 n ≡ n
 add-zero-n n = refl
 
--- m+0≡m : (m : ℕ) → m + 0 ≡ m
--- m+0≡m 0      = refl
--- m+0≡m (1+ m) = cong (m+0≡m m)
-
--- +-identity′ : ∀ (n : ℕ) → n + zero ≡ n
--- +-identity′ zero = refl
--- +-identity′ (suc n) rewrite +-identity′ n = refl
-add-n-zero : ∀ (n : Nat) -> add n 0 ≡ n
+add-n-zero : ∀ n -> add n 0 ≡ n
 add-n-zero zero     = refl
 add-n-zero (succ n) = cong succ (add-n-zero n)
 
@@ -173,7 +167,7 @@ even-6 = even-succ 4 (even-succ 2 (even-succ 0 even-zero))
 even-14 : Even 14
 even-14 = even-succ 12 (even-succ 10 (even-succ 8 (even-succ 6 (even-succ 4 (even-succ 2 (even-succ zero even-zero))))))
 
-is-even-0 : ∀ (n : Nat) -> Bool
+is-even-0 : Nat -> Bool
 is-even-0 zero           = true
 is-even-0 (succ zero)    = false
 is-even-0 (succ(succ a)) = is-even-0 a
@@ -181,7 +175,7 @@ is-even-0 (succ(succ a)) = is-even-0 a
 -- context n : Nat
 -- context x : Not (Even n)
 -- goal : Not (Even (succ (succ n)))
-aux-is-even-1 : ∀ (n : Nat) -> (x : Not (Even n)) -> Not (Even (succ (succ n)))
+aux-is-even-1 : ∀ n -> (x : Not (Even n)) -> Not (Even (succ (succ n)))
 aux-is-even-1 n x (even-succ .n p) = x p
 
 one-not-even : Not (Even 1)
@@ -189,7 +183,7 @@ one-not-even = λ ()
 
 -- What is the evidence that makes a number even?
 -- Returns a Dec: Why it is "true" or why it is "false"?
-is-even-1 : ∀ (n : Nat) -> Dec (Even n)
+is-even-1 : ∀ n -> Dec (Even n)
 is-even-1 zero           = yes even-zero
 is-even-1 (succ zero)    = nop λ ()
 -- This field asks for a type Dec (Even (succ (succ n))), but a Dec can
@@ -201,40 +195,39 @@ is-even-1 (succ (succ n)) | nop x = nop (aux-is-even-1 n x)
 
 
 -- Duplicates a number
-double : ∀ (n : Nat) -> Nat
+double : Nat -> Nat
 double zero     = zero
 double (succ n) = (succ (succ (double n)))
 
-double-is-even : ∀ (n : Nat) -> Even (double n)
+double-is-even : ∀ n -> Even (double n)
 double-is-even zero     = even-zero
 double-is-even (succ n) = even-succ (double n) (double-is-even n)
 
+f : ∀ (n : Nat) -> ∀ m -> add n (succ m) ≡ succ (add n m)
+f zero     m = refl
+f (succ n) m = cong succ (f n m)
 
+almost-assoc : ∀ n -> add n (succ n) ≡ succ (add n n)
+almost-assoc n = f n n
 
-almost-assoc : ∀ (m : Nat) -> succ (add m m) ≡ add m (succ m)
-almost-assoc zero    = refl
-almost-assoc (succ n) = {!   !}
+-- prova-doida-0 : ∀ n -> sum n ≡ half (add (mul n n) n)
+-- prova-doida-1 : ∀ n (n > 2) a b c -> Not (add (pow a n) (pow b n) ≡ pow c n)
 
--- ih2 : succ (add m m) ≡ succ (double m)
--- eqp : succ (add m m) ≡ add m (succ m)
-add-n-n-double : ∀ (n : Nat) -> add n n ≡ double n -- both of them returns a Nat
+add-n-n-double : ∀ n -> add n n ≡ double n -- both of them returns a Nat
 add-n-n-double zero     = refl
 add-n-n-double (succ m) =
-  let ih  = add-n-n-double m -- working with something "concrete"
-      ih2 = cong succ ih -- cong apply something on both sides of the equality
-      eqp = almost-assoc m
+  let ih       = add-n-n-double m -- working with something "concrete"
+      ih2      = cong succ ih -- cong apply something on both sides of the equality
+      eqp      = sym (almost-assoc m)
       template = λ x -> x ≡ succ (double m)
-      result = (subst template eqp ih2)
-      ih3 = cong succ result
+      result   = (subst template eqp ih2)
+      ih3      = cong succ result
   in ih3
 -- Notes --
 --       add m m         ≡             double m   -- inductive hypotesis (we have it for free)
 -- succ (add m m)        ≡ succ       (double m)  -- applying (cong succ)
 -- succ (succ (add m m)) ≡ succ (succ (double m)) -- applying (cong succ)
 -- succ (add m (succ m)) ≡ succ (succ (double m)) -- objetive
-
-
-
 
 -- sub-ok : ∀ (n : Nat) -> ∀ (m : Nat) -> (mn) -> add n (sub m n) ≡ m
 -- sub-ok n m = ?

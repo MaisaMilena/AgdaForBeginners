@@ -22,13 +22,13 @@ In Agda, we can represent this by means of a function which takes two instances 
 - Proving that a number is ``Even``
 - Proof that doubling a number results in an ``Even`` number
 
-
 ### Notes
 - reflexivity: ``refl : ∀ {r} -> (r == r)``
 - symmetry: ``sym : ∀ {r s} -> (r == s) -> (s == r)``
 - transitivity: ``trans : ∀ {r s t} -> (r == s) -> (s == t) -> (r == t)``
 - congruency: ``cong : ∀ {A B} {m n : A} -> (f : A -> B) -> m ≡ n -> f m ≡ f n``
+  A relation is said to be a congruence for a given function if it is preserved by applying that function.
+If ``e`` is evidence that ``x ≡ y``, then ``cong f e`` is evidence that ``f x ≡ f y``, for any function ``f``.
 - associativity: ``assoc : ∀ a b c -> a + (b + c) ≡ (a + b) + c``
 
-- A relation is said to be a congruence for a given function if it is preserved by applying that function.
-If ``e`` is evidence that ``x ≡ y``, then ``cong f e`` is evidence that ``f x ≡ f y``, for any function ``f`.
+-- TODO: write about implicit arguments 
