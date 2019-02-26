@@ -1,8 +1,7 @@
 module Equality where
 
 open import Relation.Binary.PropositionalEquality
--- open import Data.Nat
---   hiding (module ℕ)
+
 
 -- A set that does not contain anything
 data Empty : Set where
@@ -210,9 +209,6 @@ f (succ n) m = cong succ (f n m)
 almost-assoc : ∀ n -> add n (succ n) ≡ succ (add n n)
 almost-assoc n = f n n
 
--- prova-doida-0 : ∀ n -> sum n ≡ half (add (mul n n) n)
--- prova-doida-1 : ∀ n (n > 2) a b c -> Not (add (pow a n) (pow b n) ≡ pow c n)
-
 add-n-n-double : ∀ n -> add n n ≡ double n -- both of them returns a Nat
 add-n-n-double zero     = refl
 add-n-n-double (succ m) =
@@ -223,18 +219,22 @@ add-n-n-double (succ m) =
       result   = (subst template eqp ih2)
       ih3      = cong succ result
   in ih3
--- Notes --
---       add m m         ≡             double m   -- inductive hypotesis (we have it for free)
--- succ (add m m)        ≡ succ       (double m)  -- applying (cong succ)
--- succ (succ (add m m)) ≡ succ (succ (double m)) -- applying (cong succ)
--- succ (add m (succ m)) ≡ succ (succ (double m)) -- objetive
+  -- Notes --
+  --       add m m         ≡             double m   -- inductive hypotesis (we have it for free)
+  -- succ (add m m)        ≡ succ       (double m)  -- applying (cong succ)
+  -- succ (succ (add m m)) ≡ succ (succ (double m)) -- applying (cong succ)
+  -- succ (add m (succ m)) ≡ succ (succ (double m)) -- objetive
 
--- sub-ok : ∀ (n : Nat) -> ∀ (m : Nat) -> (mn) -> add n (sub m n) ≡ m
--- sub-ok n m = ?
+
+
+
 
 -- proof that adding 2 odds is always an even
 
 
+-- Extra
+-- prova-doida-0 : ∀ n -> sum n ≡ half (add (mul n n) n)
+-- last-theorem : ∀ n (n > 2) a b c -> Not (add (pow a n) (pow b n) ≡ pow c n)
 
 
 -- TESTS --
@@ -261,6 +261,8 @@ sub-test = (sub 10 3)
 sub-negative-test : Nat
 sub-negative-test = (sub 4 5)
 
+
+-- Notes --
 -- f : Nat -> Nat
 -- f = add 2
 --
