@@ -76,22 +76,44 @@ map A B f (cons x xs) = cons (f x) (map A B f xs)
 -- cond: a function that determine a condition to be satisfied
 -- xs: a list of type A
 filter : (A : Set) -> (cond : A -> Bool) -> (xs : List A) -> List A
-filter A cond nil         = nil
+filter A cond nil         = nil -- empty list
 filter A cond (cons x xs) with (cond x) -- looking into both possibities of cond result
 filter A cond (cons x xs) | true  = cons x (filter A cond xs) -- add the element in the return list, keep looking the others
-filter A cond (cons x xs) | false = (filter A cond xs) -- keep looking the others
+filter A cond (cons x xs) | false = (filter A cond xs) -- keep looking in the other elements
 
-count : (A : Set) -> (cond : A -> Bool) -> (xs : List A) -> Nat
-count = {!   !}
+-- Count how many times a condition
+count-cond : (A : Set) -> (cond : A -> Bool) -> (xs : List A) -> Nat
+count-cond A cond nil         = zero -- empty list, no aplication of cond
+count-cond A cond (cons x xs) with (cond x)  -- looking into both possibities of cond result
+... | true  = succ (count-cond A cond xs) -- add 1 to the counter
+... | false = (count-cond A cond xs) -- keep looking in the other elements
 
--- -- Obs: provavelmente precisara de uma funcao auxiliar
--- reverse : (A : Set) -> (xs : List A) -> List A
--- reverse A xs = ?
---
--- length : (A : Set) -> (xs : List A) -> Nat
--- length = ...
+-- Lenght of a list in 1 line
+length : (A : Set) -> (xs : List A) -> Nat
+length A xs = (count-cond A (λ x -> true) xs)
 
--- if the element of xs match the cond, it is added in the return
+-- not using
+list-get-first : (A : Set) -> (xs : List A) -> List A
+list-get-first A nil          = nil
+list-get-first A (cons x nil) = (cons x nil) -- get the last number that is not zero
+list-get-first A (cons x xs)  = (list-get-first A xs)
+
+-- needs to test
+add-reverse : (A : Set) -> (element : List A) -> (xs : List A) -> List A
+add-reverse A nil xs              = nil
+add-reverse A (cons x element) xs = (cons x xs) -- valor que quero (cons x) seguido da lista já existente
+
+-- TODO
+-- Reverses a list
+reverse : (A : Set) -> (xs : List A) -> List A
+reverse A nil         = nil
+reverse A (cons x xs) =
+  let a = (add-reverse A (cons x nil) nil) -- inicia em nil mas depois vira a própria
+  in {!   !} -- (list-get-first (A (reverse A xs)))
+
+-- it is  : (cons 4 (cons 3 (cons 2 (cons 1 nil))))
+-- must be: (cons 1 (cons 2 (cons 3 (cons 4 nil))))
+
 
 
 -- index : (A : Set) -> (i : Nat) -> List A -> Maybe A
@@ -103,7 +125,7 @@ count = {!   !}
 
 -- TEST --
 list-nat : List Nat -- natural numbers list
-list-nat = (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 (cons 6 nil))))))
+list-nat = (cons 5 (cons 4 (cons 3 (cons 2 (cons 1 (cons 0 nil))))))
 
 list-bool : List Bool
 list-bool = (cons true (cons false (cons true nil)))
@@ -114,3 +136,18 @@ map-test = map Nat Nat add-two list-nat
 
 filter-test : List Nat
 filter-test = (filter Nat is-even list-nat)
+
+count-cond-test : Nat
+count-cond-test = (count-cond Nat is-even list-nat)
+
+length-test : Nat
+length-test = (length Nat list-nat)
+
+list-get-first-test : List Nat
+list-get-first-test = (list-get-first Nat list-nat)
+
+reverse-test : List Nat
+reverse-test = (reverse Nat list-nat)
+
+add-reverse-test : List Nat
+add-reverse-test = (add-reverse Nat (cons 10 nil) list-nat)
