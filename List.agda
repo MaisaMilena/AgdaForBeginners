@@ -98,22 +98,16 @@ list-get-first A nil          = nil
 list-get-first A (cons x nil) = (cons x nil) -- get the last number that is not zero
 list-get-first A (cons x xs)  = (list-get-first A xs)
 
--- needs to test
-add-reverse : (A : Set) -> (element : List A) -> (xs : List A) -> List A
-add-reverse A nil xs              = nil
-add-reverse A (cons x element) xs = (cons x xs) -- valor que quero (cons x) seguido da lista já existente
+-- To create an empty list as a "variable", it must be represented as a new parameter.
+-- Every recursive call adds a new element on "aux"
+reverse-aux : (A : Set) -> (xs : List A) -> (aux : List A) -> List A
+reverse-aux A nil aux         = aux
+reverse-aux A (cons x xs) aux = (reverse-aux A xs (cons x aux))
 
--- TODO
--- Reverses a list
+-- Reverse a list
 reverse : (A : Set) -> (xs : List A) -> List A
 reverse A nil         = nil
-reverse A (cons x xs) =
-  let a = (add-reverse A (cons x nil) nil) -- inicia em nil mas depois vira a própria
-  in {!   !} -- (list-get-first (A (reverse A xs)))
-
--- it is  : (cons 4 (cons 3 (cons 2 (cons 1 nil))))
--- must be: (cons 1 (cons 2 (cons 3 (cons 4 nil))))
-
+reverse A (cons x xs) = (reverse-aux A (cons x xs) nil)
 
 
 -- index : (A : Set) -> (i : Nat) -> List A -> Maybe A
@@ -121,6 +115,8 @@ reverse A (cons x xs) =
 --
 -- find : (A : Set) -> (cond : A -> Bool) -> List A -> Nat
 -- find A cond xs = {!   !}
+
+-- muliplication
 
 
 -- TEST --
@@ -148,6 +144,6 @@ list-get-first-test = (list-get-first Nat list-nat)
 
 reverse-test : List Nat
 reverse-test = (reverse Nat list-nat)
-
-add-reverse-test : List Nat
-add-reverse-test = (add-reverse Nat (cons 10 nil) list-nat)
+--
+-- add-reverse-test : List Nat
+-- add-reverse-test = (add-reverse Nat (cons 10 nil) list-nat)
